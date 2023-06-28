@@ -17,6 +17,9 @@ public abstract class PlacedObject implements ComparableAddress
 	
 	int starId;
 	
+	//Whether to assign the ID automatically or not
+	boolean automaticAssignment = true;
+	
 	public static final int SHIFT = 0x10;
 	
 	public PlacedObject(int addr)
@@ -29,6 +32,16 @@ public abstract class PlacedObject implements ComparableAddress
 	void crash()
 	{
 		throw new RuntimeException("Bad Object "+this.getClass().getSimpleName()+": "+Integer.toHexString(this.address));
+	}
+	
+	public void setAutomaticAssignment(boolean bool)
+	{
+		this.automaticAssignment = bool;
+	}
+	
+	public boolean getAutomaticAssignment()
+	{
+		return this.automaticAssignment;
 	}
 	
 	public int getAddress()

@@ -23,6 +23,6 @@ public class SensitiveThird extends Freestanding
 	@Override
 	public boolean acceptsStarId(int starId)
 	{
-		return (starId & 0x100) == (this.behaviorFlagC & 0x01);
+		return ((starId >> 8) & 0x01) == (this.behaviorFlagC & 0x01);
 	}
 }

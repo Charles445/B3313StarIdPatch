@@ -26,4 +26,11 @@ public class Settings
 	//Please note this doesn't have all star IDs, only ones the program is able to recognize
 	public static boolean CHECKLIST = true;
 	
+	//Behavior related to save migration
+	//Only turn this on if you are migrating an existing save with a checklist
+	public static boolean MIGRATE = false;
+	
+	//Some personal tweaks and cheats, turn this on if you want the game to be easier
+	public static boolean PERSONAL_TWEAKS = false;
+	
 }

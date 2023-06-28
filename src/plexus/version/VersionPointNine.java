@@ -104,7 +104,12 @@ public class VersionPointNine implements Version
 			//Rabbit in the dark red hallway, now that the rabbit is scene based (scene_id 1) = (scene 0)(3 and 4 flags) = 0 3, 0 4
 			//Two new stars, then
 			0x13,
-			0x14
+			0x14,
+			
+			//The randomly entered timed dark whomp towers that kill you
+			//Glitches out depending on which warp you use for some reason
+			//Leaving it alone to avoid that
+			0xaa
 			
 	};
 	
@@ -690,15 +695,53 @@ public class VersionPointNine implements Version
 			0x04675580,
 			0x046758d4,
 			0x048b0610,
+			
+			//Three Bullies Custom Counter
+			//0x1F001898
+			0x01aeabe8,
+			0x01cc3a64,
+			0x01e023cc,
+			0x020c30cc,
+			0x020c44f4,
+			0x02f5f990,
+			0x035270b4,
+			
+			//Big I, Big Eye
+			//With second byte & 0x01
+			//0x13000054
+			0x00382ccc,
+			0x018c3624,
+			0x018c3d6c,
+			
+			//Big Bully Standalone
+			//0x13003660
+			0x48ccfc,
+			0x20c2630,
+			0x20c4c30,
+			
+			//Penguin's Mother
+			//TODO some of these are surely unused
+			0x00395d50,
+			0x023ac230, //Confirmed in use, starter area left
+			0x023ac3cc,
+			0x023ac824,
+			0x026f3ef0,
+			0x026f5aa8
+			
 	};
 	
 	private static int[] starsFourthByteSensitive = new int[]{
 			
+			//JUST AVOID THESE, DON'T SET THEM
+			//14 2
+			//0x82
 			//Timer that kills you
 			//0x1F001930
-			0x3a98bac,
-			0x437af60,
-			0x49e0264
+			//0x3a98bac,
+			//0x437af60, //the one randomly found in the entrance, works as it should, unless you come in through another entrance
+			//then it unloads mario
+			//wow
+			//0x49e0264
 	};
 
 	

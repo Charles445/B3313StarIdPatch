@@ -23,6 +23,8 @@ import plexus.behavior.PlacedObject;
 import plexus.behavior.RedCoins;
 import plexus.behavior.RedCoinsBowser;
 import plexus.controller.LevelController;
+import plexus.debug.DebugCompatibility;
+import plexus.debug.PersonalTweaks;
 import plexus.util.ComparableAddress;
 
 public class InternalPlexusStarRemapper
@@ -131,8 +133,17 @@ public class InternalPlexusStarRemapper
 			nextId--;
 		}
 		
+		//DEBUG, assign specific ids first for migration
+		if(Settings.MIGRATE)
+			idsAssigned += DebugCompatibility.assignSpecific(starSet);
+		
 		for(PlacedObject object : placedObjects)
 		{
+			//Check for automatic assignment first
+			//If this is off, then the object has already been assigned
+			if(!object.getAutomaticAssignment())
+				continue;
+			
 			//Try manual tweaks first
 			if(!version.manualPlacedObjectTweaks(object) && !version.isRed(object.getStarId()))
 			{
@@ -184,6 +195,8 @@ public class InternalPlexusStarRemapper
 		
 		//Run tweaks
 		version.romTweaks();
+		if(Settings.PERSONAL_TWEAKS)
+			PersonalTweaks.romTweaks();
 		
 		System.out.println("Done applying!");
 		
@@ -240,6 +253,9 @@ public class InternalPlexusStarRemapper
 					output += " ";
 				
 				output += " : ";
+				
+				if(Settings.MIGRATE)
+					output += DebugCompatibility.addDescription(obj.getAddress());
 				
 				System.out.println(output);
 			}
