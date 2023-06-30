@@ -4,6 +4,14 @@ import plexus.behavior.PlacedObject;
 
 public class VersionPointNine implements Version
 {
+	//Payload Information
+	//
+	//
+	//807FEB00 has rabbit payload (5 words)
+	//
+	//807FEB20 has null animation payload (8 words)
+	
+	
 	//This red star stuff is confusing
 	
 	@Override
@@ -26,6 +34,9 @@ public class VersionPointNine implements Version
 		// Rabbit in alcove - 00 -> FF, no change
 		// Rabbit in red hall - 01 -> 00, 0 2 and 0 3
 		//
+		
+		//Fix null animation crash for interpreter (and maybe elsewhere?)
+		nullAnimationPayload();
 	}
 	
 	private void rabbitPayload()
@@ -52,6 +63,54 @@ public class VersionPointNine implements Version
 		
 	}
 	
+	private void nullAnimationPayload()
+	{
+		//A couple of things have a null animation
+		//This doesn't (?) crash with a recompiler
+		//But it sure does crash with an interpreter
+		//Either way it's really not a good idea to be starting null animations
+		//So if it gets a null animation, it just leaves
+		//This should fix a couple crashes related to null animation, probably not all of them
+		
+		//Interacting with geo obj init animation accel
+		//A1 will have an adjusted animation pointer
+		//A0 has the object pointer, which is nice and what we want
+		
+		//RAM 8037C658
+		//
+		//J 0x807FEB20
+		//NOP
+		
+		this.setRom(0xF93E8, 
+					0x08,0x1F,0xFA,0xC8,
+					0x00,0x00,0x00,0x00);
+		
+		//RAM 807FEB20
+		//
+		//LW T0, 0x0120 (A0)
+		//BNEZ T0, 0x807FEB34
+		//NOP
+		//JR RA
+		//NOP
+		//ADDIU SP, SP, -0x30 ; copied from 8037C658
+		//J 0x8037C660
+		//SW RA, 0x001C (SP) ; copied from 8037C65C
+		//
+		//ROM
+		//8C880120 15000003 00000000 03E00008
+		//00000000 27BDFFD0 080DF198 AFBF001C
+		this.setRom(0x7DEB30, 
+				0x8C, 0x88, 0x01, 0x20, 
+				0x15, 0x00, 0x00, 0x03,
+				0x00, 0x00, 0x00, 0x00, 
+				0x03, 0xE0, 0x00, 0x08,
+				0x00, 0x00, 0x00, 0x00, 
+				0x27, 0xBD, 0xFF, 0xD0,
+				0x08, 0x0D, 0xF1, 0x98, 
+				0xAF, 0xBF, 0x00, 0x1C);
+				
+	}
+	
 	@Override
 	public boolean manualPlacedObjectTweaks(PlacedObject obj)
 	{
@@ -59,6 +118,13 @@ public class VersionPointNine implements Version
 		if(obj.getAddress() == 0x4c04d8c)
 		{
 			obj.assign(0x148);
+			return true;
+		}
+		//A freestanding real red star that would otherwise overlap with a not-so-shy guy's real red star
+		//This change may not last, if this ends up not being justified
+		else if(obj.getAddress() == 0x4675de8)
+		{
+			obj.assign(0x149);
 			return true;
 		}
 		
@@ -99,6 +165,7 @@ public class VersionPointNine implements Version
 			//Blacklist for starIds that are annoying or otherwise tough to move
 			
 			//Dark Igloo Piranha Plants (scene_id 3, 00 flag) = (scene 02, 0) = 0x20
+			//TODO fixme, this is outdated
 			0x20,
 			
 			//Rabbit in the dark red hallway, now that the rabbit is scene based (scene_id 1) = (scene 0)(3 and 4 flags) = 0 3, 0 4
@@ -109,8 +176,13 @@ public class VersionPointNine implements Version
 			//The randomly entered timed dark whomp towers that kill you
 			//Glitches out depending on which warp you use for some reason
 			//Leaving it alone to avoid that
-			0xaa
+			0xaa,
 			
+			//Rabbit in a beta rainbow world, now that the rabbit is scene based (scene_id 10) = (scene 9)(3 and 4 flags) = 9 3, 9 4
+			0x5b,
+			0x5c
+			
+			//Shy guy is 0x146, doesn't need to be blacklisted yet, just avoided manually
 	};
 	
 	
@@ -674,14 +746,6 @@ public class VersionPointNine implements Version
 
 	private static int[] starsFirstByteSensitive = new int[]{
 			
-			//Boo Buddy
-			//0x13002768
-			0x00382b78,
-			0x02d876c8,
-			0x02d88570,
-			0x02d88a3c,
-			0x02d8a538,
-
 			//Silver Star Counter (bouncing?)
 			//0x1F0014D0
 			0x01aeb7a4,
@@ -726,7 +790,55 @@ public class VersionPointNine implements Version
 			0x023ac3cc,
 			0x023ac824,
 			0x026f3ef0,
-			0x026f5aa8
+			0x026f5aa8,
+			
+			//Boo Buddy
+			//0x13002768
+			//OK so they ARE the right things, but it's not THEIR flags that gets used
+			//Bafflingly
+			//There is some other controller type object
+			//It is a DIRECT copy over
+			//FE3B01FDE5C5
+			//2D889F0 is a controller (?)
+			//1F 00 14 7C
+			//Who is this?
+			//0x00382b78,
+			//0x02d876c8,
+			//0x02d88570,
+			//0x02d88a3c,
+			//0x02d8a538,
+			//
+			//So actually it's just a container that Boo Buddy searches for
+			//0x1F00147C
+			//Anything that spawns abs location uses it
+			//There's quite a few
+			//It's probably not sensitive, freestanding would work fine
+			//But I'll do firstbytesensitive anyway because things can break unexpectedly
+			//Surprisingly, piranha plants are applied as well
+			//I believe it's because this thing watches for stars of a specific kind that spawn in
+			
+			0x018c4b74,
+			0x01aeabd0, //note that this one applies itself to two, five piranha plants or three crystals (blue goomba dry town)
+			0x01e01238,
+			0x01e026fc,
+			0x020c4e70,
+			0x023ac8b4,
+			0x023ad1a4,
+			0x026f5b68,
+			0x02d885e8,
+			0x02d889f4, //confirmed
+			0x02d8a628,
+			0x030dc8c4,
+			0x03527c14,
+			0x04676334,
+			0x04676b28,
+			0x047bb958, //confirmed
+			0x047bc5c0,
+			
+			//Ice Bully
+			0x40e900,
+			0x26f5620
+
 			
 	};
 	
@@ -742,6 +854,22 @@ public class VersionPointNine implements Version
 			//then it unloads mario
 			//wow
 			//0x49e0264
+			
+			//Toad with a star
+			//byte flag two must have 0x08 set
+			//The matching default star IDs here are concerning to say the least
+			//I think these are supposed to be like, special stars
+			//Red or something, but they conveniently miss those IDs by a lot so who knows
+			//
+			//
+			0x01500bf4, //080800ea	//confirmed (nighttime)
+			0x04030b28, //080800c9	//confirmed
+			0x040324e0, //080800c8	//confirmed
+			0x04032dc4, //0808000a	
+			0x04033778, //080800c8	
+			0x04033e58, //080800c8	//confirmed
+			0x04034684, //080800c8	
+			0x04b0c83c //08080000	
 	};
 
 	

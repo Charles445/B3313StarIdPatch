@@ -21,6 +21,14 @@ public class PersonalTweaks
 			//8036FAA8 - ADDIU	V0, R0, 0x0000
 			System.out.println("Tweak: Disable Blue Harming Coins");
 			setRom(0x1148DB, 0x00);
+			
+			//Prevents the music box effect at night
+			System.out.println("Tweak: Disable Nighttime Music Box");
+			//807ECA60 - ADDIU T3, R0, 0x0000
+			setRom(0x194EB0, 0x24,0x0B,0x00,0x00);
+			//807EDB94 - ADDIU V1, R0, 0x0000
+			setRom(0x195FE4, 0x24,0x03,0x00,0x00);
+			
 		}
 		
 		

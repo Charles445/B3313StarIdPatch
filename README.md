@@ -2,7 +2,7 @@
  Unofficial, hastily thrown together patch for star IDs in B3313 (0.9)
 
 Tries to make as many stars as possible unique (except for real red stars).  
-Assigns ~370 IDs, and makes a few ASM changes.
+Assigns ~400 IDs, and makes a few ASM changes.
 
 #### How to Use
 Apply the .bps patch from the 'patch' folder to a copy of B3313 (0.9)
@@ -16,7 +16,7 @@ Use at your own risk! (I hope I didn't break any red stars...)
 *If you want a complete experience, I highly recommend waiting for the official 1.0 / 2.0 release instead!*  
   
 #### Changes
-370+ Assigned star IDs
+400+ Assigned star IDs
 
 Red stars now factor into your star count. Might as well...
 
@@ -29,7 +29,7 @@ I don't think that's going to break anything, but it might!
 It probably won't...
 
 
-##### Notes
-I might update this later with more assigned star IDs if I have the time.  
-I cannot guarantee that your save file using this patch will be compatible with the update, however.
+##### Notes 
+I might update this later with more assigned star IDs if I have the time.
+It is possible to migrate your save (i.e. from patch B to patch C), but you'll have to use the tool for that, so I wouldn't recommend it.
 

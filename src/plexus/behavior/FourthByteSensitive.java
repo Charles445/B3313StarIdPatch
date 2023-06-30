@@ -2,10 +2,8 @@ package plexus.behavior;
 
 public class FourthByteSensitive extends SensitiveThird
 {
-	//TODO verify...
-	//TODO one of them is bugged
-	
 	//The data is contained in the fourth byte instead of the first byte
+	//These are really touchy and sensitive, that's why they're fourth byte I bet
 	
 	public FourthByteSensitive(int addr)
 	{
