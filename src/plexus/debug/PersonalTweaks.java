@@ -29,6 +29,12 @@ public class PersonalTweaks
 			//807EDB94 - ADDIU V1, R0, 0x0000
 			setRom(0x195FE4, 0x24,0x03,0x00,0x00);
 			
+			//Removes the angle-locking when running towards the camera
+			System.out.println("Tweak: Remove movement angle locking");
+			//802840AC
+			setRom(0x3F0AC, 0x00, 0x00, 0x00,0x00);
+			//TODO restore this to vanilla, I assume vanilla does this a little bit to allow mario to walk past lakitu
+			//just that some change in b3313 made it never end
 		}
 		
 		

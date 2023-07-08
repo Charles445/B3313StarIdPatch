@@ -11,6 +11,16 @@ public class VersionPointNine implements Version
 	//
 	//807FEB20 has null animation payload (8 words)
 	
+	//Scene 0 information
+	//7 available bits (0x7F)
+	//If I am not mistaken, these are the bits the yellow switch can affect
+	// 0x01 (0) 
+	// 0x02 (1) 
+	// 0x04 (2) //Entrance with a timer, seems impossible? It does create a star unlike the other one, yt comment theorized launching from a glitchy ramp
+	// 0x08 (3) //MIPS courtyard 1
+	// 0x10 (4) //MIPS courtyard 2
+	// 0x20 (5) 
+	// 0x40 (6) 
 	
 	//This red star stuff is confusing
 	
@@ -25,18 +35,21 @@ public class VersionPointNine implements Version
 		//ad524 37 19 00 00
 		this.setRom(0xAD526, 0x00);
 		
+		//Allow any level to give stars
+		//Bowser 3 is otherwise blacklisted, presumably for the grand star
+		//We're not getting a grand star any time soon, I don't think you can actually get one in b3313 0.9
+		//This happened to 0x4ca471c
+		this.setRom(0x198E1C, 0x00,0x00,0x00,0x00);
+		
 		//Fix rabbit so his star ids factor in courseId
 		this.rabbitPayload();
 		//Possible collisions to note...
 		//
-		//08 and 10 mask, so S 2, S 3
+		//08 and 10 mask, so S 3, S 4
 		//
 		// Rabbit in alcove - 00 -> FF, no change
-		// Rabbit in red hall - 01 -> 00, 0 2 and 0 3
+		// Rabbit in red hall - 01 -> 00, 0 3 and 0 4
 		//
-		
-		//Fix null animation crash for interpreter (and maybe elsewhere?)
-		nullAnimationPayload();
 	}
 	
 	private void rabbitPayload()
@@ -63,53 +76,6 @@ public class VersionPointNine implements Version
 		
 	}
 	
-	private void nullAnimationPayload()
-	{
-		//A couple of things have a null animation
-		//This doesn't (?) crash with a recompiler
-		//But it sure does crash with an interpreter
-		//Either way it's really not a good idea to be starting null animations
-		//So if it gets a null animation, it just leaves
-		//This should fix a couple crashes related to null animation, probably not all of them
-		
-		//Interacting with geo obj init animation accel
-		//A1 will have an adjusted animation pointer
-		//A0 has the object pointer, which is nice and what we want
-		
-		//RAM 8037C658
-		//
-		//J 0x807FEB20
-		//NOP
-		
-		this.setRom(0xF93E8, 
-					0x08,0x1F,0xFA,0xC8,
-					0x00,0x00,0x00,0x00);
-		
-		//RAM 807FEB20
-		//
-		//LW T0, 0x0120 (A0)
-		//BNEZ T0, 0x807FEB34
-		//NOP
-		//JR RA
-		//NOP
-		//ADDIU SP, SP, -0x30 ; copied from 8037C658
-		//J 0x8037C660
-		//SW RA, 0x001C (SP) ; copied from 8037C65C
-		//
-		//ROM
-		//8C880120 15000003 00000000 03E00008
-		//00000000 27BDFFD0 080DF198 AFBF001C
-		this.setRom(0x7DEB30, 
-				0x8C, 0x88, 0x01, 0x20, 
-				0x15, 0x00, 0x00, 0x03,
-				0x00, 0x00, 0x00, 0x00, 
-				0x03, 0xE0, 0x00, 0x08,
-				0x00, 0x00, 0x00, 0x00, 
-				0x27, 0xBD, 0xFF, 0xD0,
-				0x08, 0x0D, 0xF1, 0x98, 
-				0xAF, 0xBF, 0x00, 0x1C);
-				
-	}
 	
 	@Override
 	public boolean manualPlacedObjectTweaks(PlacedObject obj)
@@ -158,6 +124,7 @@ public class VersionPointNine implements Version
 	private int[] skippedAddresses = new int[] {
 			0x4c04d8c, //Bowser, bumped to red star, but still invalid red star... redundant
 			0x4c04cb8, //Bowser, invalid red star, no bump
+			0x3a96100, //Green star, has 0x142
 			
 	};
 
@@ -165,7 +132,7 @@ public class VersionPointNine implements Version
 			//Blacklist for starIds that are annoying or otherwise tough to move
 			
 			//Dark Igloo Piranha Plants (scene_id 3, 00 flag) = (scene 02, 0) = 0x20
-			//TODO fixme, this is outdated
+			//There is no star ID setter in this area, therefore this one must be protected
 			0x20,
 			
 			//Rabbit in the dark red hallway, now that the rabbit is scene based (scene_id 1) = (scene 0)(3 and 4 flags) = 0 3, 0 4
@@ -180,9 +147,23 @@ public class VersionPointNine implements Version
 			
 			//Rabbit in a beta rainbow world, now that the rabbit is scene based (scene_id 10) = (scene 9)(3 and 4 flags) = 9 3, 9 4
 			0x5b,
-			0x5c
+			0x5c,
 			
-			//Shy guy is 0x146, doesn't need to be blacklisted yet, just avoided manually
+			//Treasure chests in one of the jolly roger bay variants, spawns two of the same star
+			//scene_id 23 = scene 22 starid 2, (22 2)(0xc2)
+			0xc2,
+			
+			//Manta ray, there's only one in the game!
+			//scene_id 23 = scene 22 starid 0, (22 0) (0xc0)
+			0xc0,
+			
+			//Bobomb gift at Nebula Exploding Factory, scene_id 2, scene 1 starid 0, (1 0), 0x18
+			0x18
+			
+			//Red stars that are created by custom bosses
+			//146, 14A
+			//Green star
+			//142
 	};
 	
 	
@@ -221,6 +202,12 @@ public class VersionPointNine implements Version
 		//For now just avoiding anything 0x130
 		if(starId>=0x130 && starId <= 0x13F)
 			return false;
+		
+		//TODO 0x12F and 0x12E are meant to be green? doesn't matter in 0.9 but might be worth blocking just for fun
+		//Yeah that's fun, blocking the remaining two green star slots
+		if(starId==0x12E || starId == 0x12F)
+			return false;
+		
 		
 		//Sanity check for good measure
 		if(isRed(starId))
@@ -762,13 +749,13 @@ public class VersionPointNine implements Version
 			
 			//Three Bullies Custom Counter
 			//0x1F001898
-			0x01aeabe8,
+			0x01aeabe8, //is this blue goomba dry town? is this the crystal counter that gets overridden by the other one?
 			0x01cc3a64,
 			0x01e023cc,
 			0x020c30cc,
 			0x020c44f4,
 			0x02f5f990,
-			0x035270b4,
+			0x035270b4,	//nebula basement lethal water land, three chuckyas
 			
 			//Big I, Big Eye
 			//With second byte & 0x01
@@ -787,10 +774,10 @@ public class VersionPointNine implements Version
 			//TODO some of these are surely unused
 			0x00395d50,
 			0x023ac230, //Confirmed in use, starter area left
-			0x023ac3cc,
-			0x023ac824,
-			0x026f3ef0,
-			0x026f5aa8,
+			0x023ac3cc, //confirmed
+			0x023ac824, //TODO gets overridden by 23ac8b4, was this the purpose of that actor or is there another star here?
+			0x026f3ef0, //confirmed
+			0x026f5aa8, //TODO gets overridden by 26f5b68, which was probably meant for the ice bully
 			
 			//Boo Buddy
 			//0x13002768
@@ -817,23 +804,25 @@ public class VersionPointNine implements Version
 			//Surprisingly, piranha plants are applied as well
 			//I believe it's because this thing watches for stars of a specific kind that spawn in
 			
+			//SHOCKINGLY there isn't one placed for the piranha plant igloo
+			
 			0x018c4b74,
 			0x01aeabd0, //note that this one applies itself to two, five piranha plants or three crystals (blue goomba dry town)
-			0x01e01238,
+			0x01e01238, //confirmed, piranha plants
 			0x01e026fc,
 			0x020c4e70,
-			0x023ac8b4,
-			0x023ad1a4,
-			0x026f5b68,
-			0x02d885e8,
-			0x02d889f4, //confirmed
-			0x02d8a628,
-			0x030dc8c4,
-			0x03527c14,
+			0x023ac8b4, //note this one applies itself to two, penguin mother and ??? //TODO what is the conflict here? was it placed for the mother specifically?
+			0x023ad1a4, //confirmed, ice boss
+			0x026f5b68, //note this one applies itself to two, penguin mother and ice boss
+			0x02d885e8, //confirmed, big boo after little boos, may apply to two? didn't see a big boo in this level
+			0x02d889f4, //confirmed, piranha plants
+			0x02d8a628, //note this one applies itself to two, five boos and big boo up top, quiet courtyard boo mansion
+			0x030dc8c4, //confirmed, wiggler
+			0x03527c14, //confirmed, treasure chests
 			0x04676334,
-			0x04676b28,
-			0x047bb958, //confirmed
-			0x047bc5c0,
+			0x04676b28, //confirmed, prince bobomb
+			0x047bb958, //confirmed, piranha plants
+			0x047bc5c0, //confirmed, wiggler
 			
 			//Ice Bully
 			0x40e900,
@@ -865,7 +854,7 @@ public class VersionPointNine implements Version
 			0x01500bf4, //080800ea	//confirmed (nighttime)
 			0x04030b28, //080800c9	//confirmed
 			0x040324e0, //080800c8	//confirmed
-			0x04032dc4, //0808000a	
+			0x04032dc4, //0808000a	//confirmed
 			0x04033778, //080800c8	
 			0x04033e58, //080800c8	//confirmed
 			0x04034684, //080800c8	
