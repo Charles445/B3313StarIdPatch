@@ -13,7 +13,7 @@ This is also not a complete fix: there are plenty of stars left unchanged, and s
 The patch might also introduce new bugs...  
 Use at your own risk! (I hope I didn't break any red stars...)
 
-*If you want a complete experience, I highly recommend waiting for the official 1.0 / 2.0 release instead!*  
+*If you want a complete experience, I highly recommend playing the unofficial 1.0 release instead!*  
   
 #### Changes
 400+ Assigned star IDs
